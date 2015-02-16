@@ -4,6 +4,7 @@ function testCluster
 runName = 'test1';
 nCores = 1;
 
+cluster = 'thor';
 fun = 'testSession';
 inputs = cell(1, nCores);
 for i = 1:nCores
@@ -17,4 +18,5 @@ proc = 1;
 mem = 8; % GB, allocate 4 GB extra if using JVM
 jvm = true;
 
-submitthor(fun, inputs, nOut, additionalFun, name, time, proc, mem, jvm);
+% submitthor(fun, inputs, nOut, additionalFun, name, time, proc, mem, jvm);
+submitCluster(cluster, fun, inputs, nOut, additionalFun, name, time, proc, mem, jvm);
