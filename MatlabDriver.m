@@ -156,13 +156,6 @@ function s = row2struct(r)
 
 end
 
-function r = struct2row(s)
-fields = fieldnames(r);
-for i = 1:length(fields)
-    
-end
-end
-
 function output = cqlClean(input)
 % Cleans up input vals for CQL statement strings
 %   Converts java.util.Date/CQL timestamps into integer format
@@ -170,10 +163,14 @@ function output = cqlClean(input)
 %   Converts numbers to strings
 if strcmpi(class(input), 'java.util.Date')
     output = num2str(int64(input.getTime));
+elseif isinteger(input)
+    output = int2str(input);
+elseif isfloat(input)
+    output = num2str(input, 16);
 elseif ischar(input)
     output = ['''',  input, ''''];
 else
-    output = num2str(input);
+    error('Error: Type for command parsing not recognized.')
 end
 end
 

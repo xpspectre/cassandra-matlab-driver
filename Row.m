@@ -17,6 +17,18 @@ classdef Row
         
         function obj = Row(row)
             
+            % Default constructor makes empty Row
+            if nargin < 1
+                row = [];
+            end
+            if isempty(row)
+                obj.size = 0;
+                obj.cols = {};
+                obj.colTypes = {};
+                obj.colNames = {};
+                return
+            end
+            
             % Get number of columns
             cd = row.getColumnDefinitions;
             obj.size = cd.size;
@@ -47,6 +59,8 @@ classdef Row
                         data = single(double(row.getFloat(i-1))); % check this; no direct java.lang.Float -> Matlab single
                     case 'double'
                         data = double(row.getDouble(i-1));
+                    case 'text'
+                        data = char(row.getString(i-1));
                     case 'varchar'
                         data = char(row.getString(i-1));
                     case 'boolean'
