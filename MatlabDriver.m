@@ -70,30 +70,74 @@ classdef MatlabDriver
             obj.execute(cql);
         end
         
-        function results = select(obj, table, key, val)
+        function results = select(obj, table, key, val, order, limit)
+            %
+            % Note: nargin includes first obj arg in methods
             %
             % Inputs:
             %   table: string
             %   key: string or cell array of strings
             %   val: string or cell array of strings
+            %   order: string or cell array of strings, column (ASC default) or {column,
+            %       'ASC'/'DESC'}
+            %   limit: integer, max number of entries to return
             % Outputs:
             %   results: Results object
+            
+            
+            % Clean up inputs
+            if nargin < 6
+                limit = [];
+                if nargin < 5
+                    order = [];
+                    if nargin < 4
+                        val = [];
+                        if nargin < 3
+                            key = [];
+                        end
+                    end
+                end
+            end
             
             % Make CQL statement
             selections = [];
             filtering = [];
             
-            if nargin > 2
-                
+            % Selection
+            if ~isempty(key) && ~isempty(val)
                 selections = cqlRowSpec(key, val);
-                
                 if iscell(key) && iscell(val) && length(key) > 1
-                    filtering = ' ALLOW FILTERING';
+                    filtering = ' ALLOW FILTERING'; % assume you want this
                 end
-                
             end
             
-            cql = ['SELECT * FROM ', table, selections, filtering];
+            % Ordering
+            if ~isempty(order)
+                if iscell(order) && length(order) == 2
+                    orderKey = order{1};
+                    orderOp = order{2};
+                    assert(strcmpi(orderOp, 'ASC') || strcmpi(orderOp, 'DESC'), 'Error: ordering operation %s not recognized.', orderOp)
+                elseif ischar(order)
+                    orderKey = order;
+                    orderOp = 'ASC';
+                else
+                    error('Error: ordering format not recognized.')
+                end
+                ordering = [' ORDER BY ', orderKey, ' ', orderOp];
+            else
+                ordering = [];
+            end
+            
+            % Returned entries limit
+            if ~isempty(limit)
+                intLimit = int32(limit);
+                assert(intLimit > 0, 'Error: limit must be a positive integer.')
+                limiting = [' LIMIT ', int2str(intLimit)];
+            else
+                limiting = [];
+            end
+            
+            cql = ['SELECT * FROM ', table, selections, filtering, ordering, limiting];
             fprintf([cql, '\n']) % DEBUG
             results = obj.execute(cql);
             
@@ -147,14 +191,81 @@ classdef MatlabDriver
             
         end
         
+        function createTable(obj, name, schema, primaryKey, properties)
+            %
+            % Inputs:
+            %   name: string, table name
+            %   schema: struct, key(string).type(string)
+            %   primaryKey: string or cell array of strings, primary key(s) with
+            %       1st as partition key
+            %   properties: cell array of strings, literal property specs
+            
+            if nargin < 5
+                properties = [];
+            end
+            
+            % Make CQL statement
+            % Add schema
+            keys = fieldnames(schema);
+            schemaList = [];
+            for i = 1:length(keys);
+                schemaList = [schemaList, keys{i}, ' ', schema.(keys{i}), ', '];
+            end
+            
+            % Add primary keys
+            primaryKeyList = 'PRIMARY KEY (';
+            if ischar(primaryKey) % single primary key
+                primaryKeyList = [primaryKeyList, primaryKey];
+            else % compound primary key
+                primaryKeyList = [primaryKeyList, primaryKey{1}];
+                for i = 2:length(primaryKey)
+                    primaryKeyList = [primaryKeyList, ', ', primaryKey{i}];
+                end
+            end
+            primaryKeyList = [primaryKeyList, ')'];
+            
+            % Add optional properties
+            propertiesList = [];
+            if ~isempty(properties)
+                assert(iscell(properties), 'Error: properties list must be a cell array.')
+                propertiesList = [' WITH ' properties{1}];
+                for i = 2:length(properties)
+                    propertiesList = [propertiesList, ' AND ', properties{i}];
+                end
+            end
+            
+            cql = ['CREATE TABLE ', name, '(', schemaList, primaryKeyList ')', propertiesList];
+            fprintf([cql, '\n']) % DEBUG
+            obj.execute(cql);
+            
+        end
+        
+        function createIndex(obj, table, key, index)
+            %
+            % Inputs:
+            %   table: string
+            %   key: string
+            %   index: string, alias to index on key
+            
+            if nargin < 4
+                index = [];
+            end
+            
+            if ~isempty(index)
+                indexAlias = [index, ' '];
+            else
+                indexAlias = [];
+            end
+            
+            cql = ['CREATE INDEX ', indexAlias, 'ON', table, ' (', key, ')'];
+            fprintf([cql, '\n']) % DEBUG
+            obj.execute(cql);
+        
     end
     
 end
 
 %% Helper functions
-function s = row2struct(r)
-
-end
 
 function output = cqlClean(input)
 % Cleans up input vals for CQL statement strings
@@ -163,6 +274,8 @@ function output = cqlClean(input)
 %   Converts numbers to strings
 if strcmpi(class(input), 'java.util.Date')
     output = num2str(int64(input.getTime));
+elseif strcmpi(class(input), 'java.util.UUID')
+    output = char(input);
 elseif isinteger(input)
     output = int2str(input);
 elseif isfloat(input)

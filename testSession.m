@@ -1,6 +1,6 @@
 function out = testSession(idx)
 
-fprintf('Running session testing, index %n.\n', idx)
+fprintf('Running session testing, index %d.\n', idx)
 
 m = MatlabDriver;
 
@@ -23,6 +23,12 @@ for i = 1:nSensors
     end
 end
 
-out = m.select('data');
+% r = m.select('data');
+r = m.select('data', 'sensor_id', 11, {'collected_at', 'DESC'}, 20);
+
+while ~r.exhausted
+    x = row2struct(r.next);
+    fprintf('Sensor %d at %s has %f volts\n', x.sensor_id, char(x.collected_at), x.volts)
+end
 
 m.close;

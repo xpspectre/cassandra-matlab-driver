@@ -1,6 +1,5 @@
 function r = struct2row(s)
 % Convert struct with fieldnames as keys to Row object for Cassandra db.
-%   Guesses the appropriate type
 
 fields = fieldnames(s);
 nFields = length(fields);
@@ -25,6 +24,8 @@ for i = 1:length(fields)
     if isjava(val)
         if strcmpi(class(val), 'java.util.Date')
             type = 'timestamp';
+        elseif strcmpi(class(val), 'java.util.UUID')
+            type = 'uuid';
         else
             error('Error: Java type %s in Matlab not recognized.', class(val))
         end

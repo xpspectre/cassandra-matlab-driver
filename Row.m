@@ -1,5 +1,8 @@
 classdef Row
     %
+    % colTypes contains CQL types. Functions that create Rows from Matlab
+    % objects need to handle type conversion.
+    %
     % TODO: Should cols be allowed to be arbitrary datatypes (e.g., arrays for particular efficient uses)? or must
     % they be cell arrays (general mixed use)?
     %
@@ -67,6 +70,8 @@ classdef Row
                         data = row.getBool(i-1);
                     case 'timestamp'
                         data = row.getDate(i-1); % returns java.util.Date object
+                    case 'uuid'
+                        data = row.getDate(i-1); % returns java.util.UUID object
                     otherwise
                         error('Error: type %s not recognized.', obj.colTypes{i})
                 end
