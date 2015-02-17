@@ -240,6 +240,18 @@ classdef MatlabDriver
             
         end
         
+        function dropTable(obj, table)
+            %
+            % Inputs:
+            %   table: string, table to drop
+            % TODO: decide on how DROP TABLE/KEYSPACE/INDEX work
+            
+            cql = ['DROP TABLE ', table];
+            fprintf([cql, '\n']) % DEBUG
+            obj.execute(cql);
+            
+        end
+        
         function createIndex(obj, table, key, index)
             %
             % Inputs:
