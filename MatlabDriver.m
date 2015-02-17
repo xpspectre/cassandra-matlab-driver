@@ -260,6 +260,8 @@ classdef MatlabDriver
             cql = ['CREATE INDEX ', indexAlias, 'ON', table, ' (', key, ')'];
             fprintf([cql, '\n']) % DEBUG
             obj.execute(cql);
+            
+        end
         
     end
     
