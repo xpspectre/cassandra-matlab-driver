@@ -9,30 +9,42 @@ classdef MatlabDriver
     
     methods
         
-        function obj = MatlabDriver(varargin)
+        function obj = MatlabDriver(clusterNode, sessionName)
             % Class constructor initiates stateful db connection
+            % Note: After connection, driver auto discovers and load balances on
+            %   all nodes
             % Inputs:
-            %   clusterName: string with one of the cluster nodes
+            %   clusterNode: string or cell array of strings, cluster nodes
             %   sessionName: keyspace to connect to
             
             % Fill in missing inputs
             if nargin < 2
                 sessionName = [];
                 if nargin < 1
-                    clusterName = [];
+                    clusterNode = [];
                 end
             end
             
             % Set default inputs
-            if isempty(clusterName)
-                clusterName = 'bt2000q-02';
+            if isempty(clusterNode)
+                clusterNode = {'bt2000q-01', 'bt2000q-02', 'bt2000q-03'};
             end
             if isempty(sessionName)
                 sessionName = 'demo';
             end
             
             % Call Java Cassandra driver to initialize db connection
-            obj.cluster = com.datastax.driver.core.Cluster.builder().addContactPoint(clusterName).build();
+            clusterBuilder = com.datastax.driver.core.Cluster.builder();
+            if ischar(clusterNode) % single node
+                clusterBuilder.addContactPoint(clusterNode);
+            elseif iscell(clusterNode) % multiple nodes
+                for i = 1:length(clusterNode)
+                    clusterBuilder.addContactPoint(clusterNode{i});
+                end
+            else
+                error('Error: Invalid cluster nodes specified.')
+            end
+            obj.cluster = clusterBuilder.build();
             obj.session = obj.cluster.connect(sessionName);
             
         end
