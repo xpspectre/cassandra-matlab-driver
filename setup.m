@@ -1,14 +1,12 @@
 function setup
 % Setup MATLAB Cassandra driver
-%clear; close all; clc
 
+% Get full path to this file
 driverPath = fileparts(mfilename('fullpath'));
 
-% System call to compile driver classes
-%system('javac -classpath cassandra-java-driver-2.0.2/cassandra-driver-core-2.0.2.jar:. MatlabDriverJava.java')
-
-% Add Matlab driver object to Matlab path
+% Add Matlab driver object and supporting sources to Matlab path
 addpath(driverPath);
+addpath([driverPath, '/Source']);
 
 % Add driver jars in current directory to classpath
 javaaddpath(driverPath);
@@ -27,5 +25,8 @@ for i = 1:length(libJarsListing)
     libJarsListing{i} = [driverPath, '/cassandra-java-driver-2.0.2/lib/', libJarsListing{i}];
 end
 javaaddpath(libJarsListing)
+
+% Add driver path to environment variables
+setenv('CASSANDRA_MATLAB_DRIVER_PATH', driverPath)
 
 disp('Matlab Cassandra driver')

@@ -10,7 +10,7 @@ classdef MatlabDriver
     methods
         
         function obj = MatlabDriver(clusterNode, sessionName)
-            % Class constructor initiates stateful db connection
+            % Class constructor initiates stateful db connection.
             % Note: After connection, driver auto discovers and load balances on
             %   all nodes
             % Inputs:
@@ -50,17 +50,17 @@ classdef MatlabDriver
         end
         
         function delete(obj)
-            % Class destructor closes connection
+            % Class destructor closes connection.
             obj.close;
         end
         
         function close(obj)
-            % Close db connection
+            % Close db connection.
             obj.cluster.close();
         end
         
         function results = execute(obj, command)
-            % Execute raw CQL statement
+            % Execute raw CQL statement.
             %   Note: need to escape single quotes "'" with another single quote
             results = Results(obj.session.execute(command));
         end
@@ -68,7 +68,7 @@ classdef MatlabDriver
         % General db commands that generate corresponding CQL strings
         
         function insert(obj, table, row)
-            %
+            % INSERT row into table.
             % Inputs:
             %   table: string
             %   row: Row
@@ -83,9 +83,8 @@ classdef MatlabDriver
         end
         
         function results = select(obj, table, key, val, order, limit)
-            %
-            % Note: nargin includes first obj arg in methods
-            %
+            % SELECT row in table with specified index and returns Results
+            %   object.
             % Inputs:
             %   table: string
             %   key: string or cell array of strings
@@ -95,7 +94,6 @@ classdef MatlabDriver
             %   limit: integer, max number of entries to return
             % Outputs:
             %   results: Results object
-            
             
             % Clean up inputs
             if nargin < 6
@@ -156,7 +154,7 @@ classdef MatlabDriver
         end
         
         function update(obj, table, key, val, assignment)
-            %
+            % UPDATE row in table with specified index.
             % Inputs:
             %   table: string
             %   key: string or cell array of strings, specifies row
@@ -186,7 +184,7 @@ classdef MatlabDriver
         end
         
         function remove(obj, table, key, val)
-            %
+            % DELETE row in table with specified index.
             % Inputs:
             %   table: string
             %   key: string or cell array of strings, specifies row
@@ -204,7 +202,7 @@ classdef MatlabDriver
         end
         
         function createTable(obj, name, schema, primaryKey, properties)
-            %
+            % CREATE TABLE with specified schema struct.
             % Inputs:
             %   name: string, table name
             %   schema: struct, key(string).type(string)
@@ -253,7 +251,7 @@ classdef MatlabDriver
         end
         
         function dropTable(obj, table)
-            %
+            % DROP TABLE.
             % Inputs:
             %   table: string, table to drop
             % TODO: decide on how DROP TABLE/KEYSPACE/INDEX work
@@ -265,7 +263,7 @@ classdef MatlabDriver
         end
         
         function createIndex(obj, table, key, index)
-            %
+            % CREATE INDEX on a key in table.
             % Inputs:
             %   table: string
             %   key: string

@@ -1,10 +1,13 @@
 function out = testSession(idx)
 
-fprintf('Running session testing, index %d.\n', idx)
+fprintf('Running test session, index %d.\n', idx)
 
+fprintf('Creating driver...\n')
 m = MatlabDriver;
+fprintf('Driver created.\n')
 
 % Test demo.data table
+fprintf('Testing demo.data table...\n')
 
 nSensors = 3;
 nMeasurementsPerSensor = 5;
@@ -32,3 +35,5 @@ while ~r.exhausted
 end
 
 m.close;
+
+out = 'it worked';

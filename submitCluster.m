@@ -151,8 +151,10 @@ end
 script = '/bt/programs/noarch/bin/submit.maui.general';
 
 % Number processors
-if proc > 12
-    error('submitCluster:ProcessorNumber', 'Too many processors desired.')
+if strcmpi(cluster, 'thor') && proc > 12
+    error('submitCluster:ProcessorNumber', 'Too many processors desired for thor.')
+elseif strcmpi(cluster, 'vali') && proc > 64
+    error('submitCluster:ProcessorNumber', 'Too many processors desired for vali.')
 end
 script = [script ' -c ' num2str(proc)];
 
@@ -204,10 +206,11 @@ additionalFun(1,1:end) = deal({'-a'});
 %   Distinguish between JVM-required and excluded usage
 fprintf('Compiling...\n')
 if jvm
+    cassandraDriverPath = [getenv('CASSANDRA_MATLAB_DRIVER_PATH'), '/'];
     mcc('-R', '-nosplash', '-R', '-nodisplay', '-R', '-singleCompThread', ...
-        '-a', 'cassandra-java-driver-2.0.2/cassandra-driver-core-2.0.2.jar', ...
-        '-a', 'cassandra-java-driver-2.0.2/cassandra-driver-dse-2.0.2.jar', ...
-        '-a', 'cassandra-java-driver-2.0.2/lib/*', ...
+        '-a', [cassandraDriverPath, 'cassandra-java-driver-2.0.2/cassandra-driver-core-2.0.2.jar'], ...
+        '-a', [cassandraDriverPath, 'cassandra-java-driver-2.0.2/cassandra-driver-dse-2.0.2.jar'], ...
+        '-a', [cassandraDriverPath, 'cassandra-java-driver-2.0.2/lib/*'], ...
         '-m', [dir 'submitfile.m'], '-d', dir, additionalFun{:})
 else
     mcc('-R', '-nosplash', '-R', '-nodisplay', '-R', '-singleCompThread', ...
@@ -215,14 +218,17 @@ else
 end
 fprintf('done.\n')
 
-%Modify MCR_CACHR_ROOT to point locally on machine
+% Modify MCR_CACHE_ROOT to point locally on machine
 fid = fopen([dir 'run_submitfile.sh'], 'r'); % Open file
 file = fscanf(fid, '%c'); % Extract contents
 fclose(fid);
 fid = fopen([dir 'run_submitfile.sh'], 'w'); % Open and erase file
 matchline = '  echo LD_LIBRARY_PATH is \${LD_LIBRARY_PATH};\n'; % The line after which the MCR_CACHE_ROOT will be set
 addline = '  mcr_root=/tmp/\${USER}\$\$/ ;\n  MCR_CACHE_ROOT=$mcr_root ;\n  export MCR_CACHE_ROOT;\n  trap ''rm -rf "$mcr_root"'' EXIT ;\n';
-file = regexprep(file, matchline, [matchline addline]);
+% vmemlines = '  ulimit -v 200000000;\n  ulimit;\n  ulimit -v;\n';
+% vmemlines = '  ulimit;\n  ulimit -v;\n';
+vmemlines = [];
+file = regexprep(file, matchline, [matchline addline vmemlines]);
 fwrite(fid, file);
 fclose(fid);
 
@@ -324,5 +330,18 @@ fprintf(fid, 'exit 0\n');
 fclose(fid);
 
 system(['chmod 744 "' dir 'resubmit.' cluster '.here"']);
+
+% java memory settings
+% if jvm
+%     fid = fopen([dir 'java.opts'], 'w');
+%     fprintf(fid, '-Xms256m\n');
+%     fprintf(fid, '-Xmx256m\n');
+% %     fprintf(fid, '-XX:ReservedCodeCacheSize=256m\n');
+% %     fprintf(fid, '-Xms512m\n');
+% %     fprintf(fid, '-Xmx512m\n');
+% %     fprintf(fid, '-XX:MaxHeapSize=512m\n');
+% %     fprintf(fid, '-XX:CompressedClassSpaceSize=64m\n');
+%     fclose(fid);
+% end
 
 end
