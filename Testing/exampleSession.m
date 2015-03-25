@@ -1,6 +1,6 @@
-function out = testSession(idx)
+function out = exampleSession(idx)
 
-fprintf('Running test session, index %d.\n', idx)
+fprintf('Running example session, index %d.\n', idx)
 
 fprintf('Creating driver...\n')
 m = MatlabDriver;

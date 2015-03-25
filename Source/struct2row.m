@@ -18,41 +18,8 @@ for i = 1:length(fields)
     % Assign value directly
     cols{i} = val;
     
-    % Select type
-    %   Note: default Matlab types are a subset of CQL and Java types
-    %   E.g., floating point numbers -> doubles
-    if isjava(val)
-        if strcmpi(class(val), 'java.util.Date')
-            type = 'timestamp';
-        elseif strcmpi(class(val), 'java.util.UUID')
-            type = 'uuid';
-        else
-            error('Error: Java type %s in Matlab not recognized.', class(val))
-        end
-    elseif isinteger(val)
-        if isa(val, 'int32')
-            type = 'int';
-        elseif isa(val, 'int64')
-            type = 'long';
-        else
-            type = 'int';
-        end % default
-    elseif isfloat(val)
-        if isa(val, 'double')
-            type = 'double';
-        elseif isa(val, 'single')
-            type = 'float';
-        else % default
-            type = 'double';
-        end
-    elseif ischar(val)
-        type = 'varchar';
-    elseif islogical(val)
-        type = 'boolean';
-    end
-    
     % Assign type
-    colTypes{i} = type;
+    [~, colTypes{i}] = getCQLStringAndTypeFromMatlabVal(val);
     
     % Assign field name
     colNames{i} = fields{i};

@@ -1,4 +1,4 @@
-function testCluster
+function exampleCluster
 % Test script for cluster
 
 runName = 'test1';
@@ -6,7 +6,7 @@ nCores = 3;
 
 % cluster = 'thor';
 cluster = 'vali';
-fun = 'testSession';
+fun = 'exampleSession';
 inputs = cell(1, nCores);
 for i = 1:nCores
     inputs{i} = {i}; % remember to give it a cell array of cells

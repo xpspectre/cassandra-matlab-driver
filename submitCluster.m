@@ -225,10 +225,7 @@ fclose(fid);
 fid = fopen([dir 'run_submitfile.sh'], 'w'); % Open and erase file
 matchline = '  echo LD_LIBRARY_PATH is \${LD_LIBRARY_PATH};\n'; % The line after which the MCR_CACHE_ROOT will be set
 addline = '  mcr_root=/tmp/\${USER}\$\$/ ;\n  MCR_CACHE_ROOT=$mcr_root ;\n  export MCR_CACHE_ROOT;\n  trap ''rm -rf "$mcr_root"'' EXIT ;\n';
-% vmemlines = '  ulimit -v 200000000;\n  ulimit;\n  ulimit -v;\n';
-% vmemlines = '  ulimit;\n  ulimit -v;\n';
-vmemlines = [];
-file = regexprep(file, matchline, [matchline addline vmemlines]);
+file = regexprep(file, matchline, [matchline addline]);
 fwrite(fid, file);
 fclose(fid);
 
@@ -336,11 +333,6 @@ system(['chmod 744 "' dir 'resubmit.' cluster '.here"']);
 %     fid = fopen([dir 'java.opts'], 'w');
 %     fprintf(fid, '-Xms256m\n');
 %     fprintf(fid, '-Xmx256m\n');
-% %     fprintf(fid, '-XX:ReservedCodeCacheSize=256m\n');
-% %     fprintf(fid, '-Xms512m\n');
-% %     fprintf(fid, '-Xmx512m\n');
-% %     fprintf(fid, '-XX:MaxHeapSize=512m\n');
-% %     fprintf(fid, '-XX:CompressedClassSpaceSize=64m\n');
 %     fclose(fid);
 % end
 

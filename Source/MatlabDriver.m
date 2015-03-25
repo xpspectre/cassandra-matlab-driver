@@ -291,24 +291,14 @@ end
 
 %% Helper functions
 
-function output = cqlClean(input)
-% Cleans up input vals for CQL statement strings
+function string = cqlClean(value)
+% Cleans up input Matlab values for CQL statement strings
 %   Converts java.util.Date/CQL timestamps into integer format
 %   Escapes/quotes string-like vals
 %   Converts numbers to strings
-if strcmpi(class(input), 'java.util.Date')
-    output = num2str(int64(input.getTime));
-elseif strcmpi(class(input), 'java.util.UUID')
-    output = char(input);
-elseif isinteger(input)
-    output = int2str(input);
-elseif isfloat(input)
-    output = num2str(input, 16);
-elseif ischar(input)
-    output = ['''',  input, ''''];
-else
-    error('Error: Type for command parsing not recognized.')
-end
+%   Wraps collections in brackets and does above.
+string = getCQLStringAndTypeFromMatlabVal(value);
+
 end
 
 function selections = cqlRowSpec(key, val)
