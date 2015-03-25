@@ -42,7 +42,7 @@ if isCollection
     
     % Build entire collection string
     string = ['[', string];
-    for i = 1:maxDim
+    for i = 2:maxDim
         if iscell(value)
             val = value{i};
         else
