@@ -1,5 +1,5 @@
 function r = struct2row(s)
-% Convert struct with fieldnames as keys to Row object for Cassandra db.
+% Convert Matlab struct with fieldnames as keys to Row object for Cassandra db.
 
 fields = fieldnames(s);
 nFields = length(fields);
@@ -21,7 +21,7 @@ for i = 1:length(fields)
     % Assign type
     [~, colTypes{i}] = getCQLStringAndTypeFromMatlabVal(val);
     
-    % Assign field name
+    % Assign col name
     colNames{i} = fields{i};
 end
 

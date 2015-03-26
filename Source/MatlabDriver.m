@@ -78,7 +78,7 @@ classdef MatlabDriver
             vals = strjoin(cellfun(@cqlClean, row.cols, 'UniformOutput', false), ', ');
             
             cql = ['INSERT INTO ', table, ' (', keys, ') VALUES (', vals, ')'];
-            fprintf([cql, '\n']) % DEBUG
+%             fprintf([cql, '\n']) % DEBUG
             obj.execute(cql);
         end
         
@@ -248,6 +248,20 @@ classdef MatlabDriver
             fprintf([cql, '\n']) % DEBUG
             obj.execute(cql);
             
+        end
+        
+        function createTableFromRow(obj, name, row, primaryKey, properties)
+            % CREATE TABLE using schema from input row.
+            
+            if nargin < 5
+                properties = [];
+            end
+            
+            schema = [];
+            for i = 1:row.size
+                schema.(row.colNames{i}) = row.colTypes{i};
+            end
+            createTable(obj, name, schema, primaryKey, properties);
         end
         
         function dropTable(obj, table)
